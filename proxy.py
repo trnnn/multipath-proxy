@@ -5,7 +5,10 @@ import tornado.ioloop
 import tornado.httpclient
 # from urlparse import urlparse
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> bb39f124284664757142637387fd839422e2accb
 disallowed_response_headers = frozenset([
     'connection',
     'keep-alive',
@@ -24,7 +27,11 @@ disallowed_response_headers = frozenset([
 class ProxyHandler(tornado.web.RequestHandler):
     SUPPORTED_METHODS = ['GET', 'POST']
 
+<<<<<<< HEAD
+    def handle_response(self, response):
+=======
     def _handle_response(self, response):
+>>>>>>> bb39f124284664757142637387fd839422e2accb
         self.set_status(response.code)
 
         # check the last comment of http://goo.gl/4w5yj
@@ -53,6 +60,14 @@ class ProxyHandler(tornado.web.RequestHandler):
             allow_nonstandard_methods=True
         )
 
+<<<<<<< HEAD
+        http_client = tornado.httpclient.AsyncHTTPClient()
+
+        try:
+            http_client.fetch(http_req, self.handle_response)
+        except tornado.httpclient.HTTPError as err:
+            self.handle_response(err.response)
+=======
         http_client_1 = tornado.httpclient.AsyncHTTPClient()
         http_client_2 = tornado.httpclient.AsyncHTTPClient()
 
@@ -71,12 +86,17 @@ class ProxyHandler(tornado.web.RequestHandler):
             http_client_1.close()
         except tornado.httpclient.HTTPError as err:
             self._handle_response(err.response)
+>>>>>>> bb39f124284664757142637387fd839422e2accb
         except Exception, err:
             self.set_status(500)
             self.write('Internal Server Error: ' + str(err))
             self.finish()
 
+<<<<<<< HEAD
+    # define self.post() as self.get()
+=======
     # def self.post() as self.get()
+>>>>>>> bb39f124284664757142637387fd839422e2accb
     post = get
 
 
