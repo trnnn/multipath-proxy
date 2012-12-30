@@ -1,9 +1,7 @@
-#!/usr/bin/env node
-
 var http = require('http');
 var url = require('url');
  
-http.createServer(function(client_request, client_response) {
+var proxy_server = http.createServer(function(client_request, client_response) {
     var parsed_url = url.parse(client_request.url);
     var proxy_request_options = {
         host: parsed_url.host,
@@ -30,8 +28,14 @@ http.createServer(function(client_request, client_response) {
 
         proxy_request_2.abort();
         flag = 1;
-        console.info('using 1');
+        // console.info('using 1');
         client_response.writeHead(proxy_response_1.statusCode, proxy_response_1.headers);
+    });
+    proxy_request_1.on('error', function(err) {
+        // aborting connections will cause many ECONNRESET errors
+        if (err.code !== 'ECONNRESET') {
+            console.error('Proxy Request 1 Error: ' + err.message);
+        }
     });
 
     proxy_request_2 = http.request(proxy_request_options, function(proxy_response_2) {
@@ -48,8 +52,13 @@ http.createServer(function(client_request, client_response) {
 
         proxy_request_1.abort();
         flag = 2;
-        console.info('using 2');
+        // console.info('using 2');
         client_response.writeHead(proxy_response_2.statusCode, proxy_response_2.headers);
+    });
+    proxy_request_2.on('error', function(err) {
+        if (err.code !== 'ECONNRESET') {
+            console.error('Proxy Request 2 Error: ' + err.message);
+        }
     });
 
 
@@ -77,7 +86,9 @@ http.createServer(function(client_request, client_response) {
     client_request.on('error', function(err) {
         console.error('Server Error: ' + err.message);
     });
-}).listen(8080);
+});
+
+proxy_server.listen(8080);
 console.info('Listening on 8080');
 
 process.on('uncaughtException', function(err) {
