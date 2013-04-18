@@ -1,1 +1,1 @@
-nothing here
+increasing availability by using redundancy
