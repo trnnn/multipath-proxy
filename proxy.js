@@ -9,7 +9,6 @@ var proxy_server = http.createServer(function(client_request, client_response) {
         method: client_request.method,
         headers: client_request.headers
     };
-    console.info(client_request.method + ' ' + client_request.url);
 
     var flag = 0;
     var proxy_request_1, proxy_request_2;
@@ -26,16 +25,16 @@ var proxy_server = http.createServer(function(client_request, client_response) {
             }
         });
 
-        proxy_request_2.abort();
         flag = 1;
-        // console.info('using 1');
+        // proxy_request_2.abort();
+        console.info('Agent 1 ' + client_request.method + ' ' + client_request.url);
         client_response.writeHead(proxy_response_1.statusCode, proxy_response_1.headers);
     });
     proxy_request_1.on('error', function(err) {
         // aborting connections will cause many ECONNRESET errors
-        if (err.code !== 'ECONNRESET') {
+        // if (err.code !== 'ECONNRESET') {
             console.error('Proxy Request 1 Error: ' + err.message);
-        }
+        // }
     });
 
     proxy_request_2 = http.request(proxy_request_options, function(proxy_response_2) {
@@ -50,46 +49,26 @@ var proxy_server = http.createServer(function(client_request, client_response) {
             }
         });
 
-        proxy_request_1.abort();
         flag = 2;
-        // console.info('using 2');
+        // proxy_request_1.abort();
+        console.info('Agent 2 ' + client_request.method + ' ' + client_request.url);
         client_response.writeHead(proxy_response_2.statusCode, proxy_response_2.headers);
     });
     proxy_request_2.on('error', function(err) {
-        if (err.code !== 'ECONNRESET') {
+        // if (err.code !== 'ECONNRESET') {
             console.error('Proxy Request 2 Error: ' + err.message);
-        }
+        // }
     });
 
 
-    // client_request.pipe(proxy_request);
-    client_request.on('data', function(chunk) {
-        if (flag === 0) {
-            proxy_request_1.write(chunk);
-            proxy_request_2.write(chunk);
-        } else if (flag === 1) {
-            proxy_request_1.write(chunk);
-        } else if (flag === 2) {
-            proxy_request_2.write(chunk);
-        }
-    });
-    client_request.on('end', function() {
-        if (flag === 0) {
-            proxy_request_1.end();
-            proxy_request_2.end();
-        } else if (flag === 1) {
-            proxy_request_1.end();
-        } else if (flag === 2) {
-            proxy_request_2.end();
-        }
-    });
+    client_request.pipe(proxy_request_1);
+    client_request.pipe(proxy_request_2);
     client_request.on('error', function(err) {
         console.error('Server Error: ' + err.message);
     });
+}).listen(8080, function() {
+    console.info('Listening on 8080');
 });
-
-proxy_server.listen(8080);
-console.info('Listening on 8080');
 
 process.on('uncaughtException', function(err) {
     console.error('Caught exception: ' + err);
